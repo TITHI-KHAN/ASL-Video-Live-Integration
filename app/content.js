@@ -1,11 +1,11 @@
-// content.js - modifies and adds behaviors to active tab page
+// content.js - modifies and adds behaviors to the active tab page
 
 (function main() {
 
   var originalSentences = {};
   var markedUpSentences = {};
   var replacedSentences = null;
-  var extensionSettings = {}
+  var extensionSettings = {};
   let FIREBASE_URL = '';
   let CHROME_STORAGE_VAR = "atsp_settings";
 
@@ -42,19 +42,10 @@
   chrome.runtime.onMessage.addListener(function(request) {
     if (request.from === "extension") {
       switchingSetting(request.settings, request.resets);
-    } 
-    else if (request.from === "API") {
-      if (request.textType === "sentence") {
-        replacedSentences = JSON.parse(request.toChange);
-        replacedSentences.forEach(sentence => {
-          sentence.text = JSON.parse(sentence.text);
-        });
-        markupComplexWords();
-        markupComplexText();
-      }
     }
   });
 
+  // Add an arrow pointing from ASL video to highlighted word
   function addArrow(node, targetElement) {
     const arrowDiv = document.createElement("div");
     arrowDiv.classList.add("arrow");
@@ -68,6 +59,21 @@
     document.body.appendChild(arrowDiv);
   }
 
+  // Helper function to fetch real-time ASL video from Dr. Alonzo’s system
+  function fetchLiveASLVideo(word, targetElement) {
+    const liveFeedbackUrl = `https://example-live-feedback-url.com/asl-video?word=${encodeURIComponent(word)}`;
+
+    fetch(liveFeedbackUrl)
+      .then(response => response.json())
+      .then(data => {
+        targetElement.innerHTML = `<video src="${data.videoUrl}" autoplay loop></video>`;
+      })
+      .catch(error => {
+        console.error("Error fetching live ASL video:", error);
+      });
+  }
+
+  // Modify showToolTip to include arrow and live feedback fetching
   function showToolTip(node, replacement) {
     if (extensionSettings["howLongSetting"] != "Permanent") {
       removeToolTips();
@@ -83,10 +89,16 @@
     node.insertBefore(tooltipWrap, node.firstChild);
     bringTooltipToFront(node, [tooltipWrap]);
 
+    // Add arrow pointing from tooltip to word
     addArrow(node, tooltipWrap);
-    fetchLiveASLVideo(node.innerText, tooltipWrap);
+
+    // Check if live feedback is enabled before fetching
+    if (extensionSettings.liveFeedbackEnabled) {
+      fetchLiveASLVideo(node.innerText, tooltipWrap);
+    }
   }
 
+  // Modify showSideTip to include arrow and live feedback fetching
   function showSideTip(node, replacement) {
     let id = node.id;
 
@@ -105,24 +117,25 @@
       node.addEventListener("mouseenter", () => dialogBox.classList.add("highlight"));
       node.addEventListener("mouseleave", () => dialogBox.classList.remove("highlight"));
 
+      // Add arrow from dialog to word
       addArrow(node, dialogBox);
-      fetchLiveASLVideo(node.innerText, dialogContent);
+
+      // Check if live feedback is enabled before fetching
+      if (extensionSettings.liveFeedbackEnabled) {
+        fetchLiveASLVideo(node.innerText, dialogContent);
+      }
     } else {
       alert("Error: A simplification wasn't found for this.");
     }
-  };
+  }
 
-  function fetchLiveASLVideo(word, targetElement) {
-    const liveFeedbackUrl = `https://example-live-feedback-url.com/asl-video?word=${encodeURIComponent(word)}`;
-
-    fetch(liveFeedbackUrl)
-      .then(response => response.json())
-      .then(data => {
-        targetElement.innerHTML = `<video src="${data.videoUrl}" autoplay loop></video>`;
-      })
-      .catch(error => {
-        console.error("Error fetching live ASL video:", error);
-      });
+  // Function to handle settings updates from popup.js
+  function switchingSetting(new_settings, resets) {
+    extensionSettings = new_settings;
+    if (resets) {
+      clearTextMarkup();
+      markupComplexText();
+    }
   }
 
   // Helper functions like identifyPageMainContent, calculateTextDensity, identifyWords, etc.
