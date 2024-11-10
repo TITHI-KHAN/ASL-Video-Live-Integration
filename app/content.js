@@ -1,7 +1,6 @@
 // content.js - modifies and adds behaviors to the active tab page
 
 (function main() {
-
   var originalSentences = {};
   var markedUpSentences = {};
   var replacedSentences = null;
