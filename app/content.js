@@ -1,5 +1,41 @@
 // content.js - modifies and adds behaviors to the active tab page
 
+/**
+ * This function identifies the element most likely to contain the text on the page.
+ * It uses the number of paragraphs (`<p>` tags) and text density (ratio of text to HTML content).
+ * @returns {Element} The element with the highest paragraph density, or the body element as a fallback.
+ */
+function identifyPageMainContent() {
+  const allElements = Array.from(document.body.getElementsByTagName('*'));
+
+  let bestElement = null;
+  let highestParagraphDensity = 0;
+
+  allElements.forEach(element => {
+    const paragraphCount = element.querySelectorAll('p').length;
+    const textDensity = calculateTextDensity(element);
+    const paragraphDensity = paragraphCount * textDensity;
+
+    if (paragraphDensity > highestParagraphDensity) {
+      highestParagraphDensity = paragraphDensity;
+      bestElement = element;
+    }
+  });
+
+  return bestElement ? bestElement : document.querySelector("body");
+}
+
+/**
+ * Calculates text density (ratio of text content length to HTML content length).
+ * @param {Element} element - HTML element to calculate density for.
+ * @returns {number} Fraction representing text density of element.
+ */
+function calculateTextDensity(element) {
+  const textContent = element.innerText;
+  const HTMLContent = element.innerHTML;
+  return HTMLContent.length > 0 ? textContent.length / HTMLContent.length : 0;
+}
+
 (function main() {
   var originalSentences = {};
   var markedUpSentences = {};
