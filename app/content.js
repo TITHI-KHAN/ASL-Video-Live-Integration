@@ -30,11 +30,91 @@ function identifyPageMainContent() {
  * @param {Element} element - HTML element to calculate density for.
  * @returns {number} Fraction representing text density of element.
  */
+
 function calculateTextDensity(element) {
-  const textContent = element.innerText;
-  const HTMLContent = element.innerHTML;
+  const textContent = element.innerText || '';
+  const HTMLContent = element.innerHTML || ''; // Ensure HTMLContent is not undefined
   return HTMLContent.length > 0 ? textContent.length / HTMLContent.length : 0;
 }
+
+/**
+ * Processes words to identify sentences and wraps them in spans with unique IDs.
+ * @param {Array} words - Array of words for the paragraph.
+ * @returns {Array} Array of sentence strings wrapped in span tags.
+ */
+function identifySentences(words) {
+  // Assuming sentences are separated by punctuation; adjust logic as needed.
+  let sentenceArray = [];
+  let sentence = [];
+  words.forEach((word, index) => {
+    sentence.push(word);
+    if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?') || index === words.length - 1) {
+      sentenceArray.push(`<span id="sentence${sentenceArray.length}">${sentence.join(" ")}</span>`);
+      sentence = [];
+    }
+  });
+  return sentenceArray;
+}
+
+/**
+ * Splits paragraph content into individual words, wraps each word in a span, and assigns a unique ID.
+ * @param {Element} paragraph - The paragraph element to identify words in.
+ * @returns {Array} Array of words wrapped in span tags with unique IDs.
+ */
+function identifyWords(paragraph) {
+  const words = paragraph.innerText.split(" ").map((word, index) => {
+    return `<span id="word${index}">${word}</span>`;
+  });
+  return words;
+}
+
+// Splits text into span elements and appends them to a wrapper
+function splitTextIntoNodes(text, wrapper) {
+  const words = text.split(" ");
+  words.forEach((word) => {
+    const span = document.createElement("span");
+    span.textContent = word + " ";
+    wrapper.appendChild(span);
+  });
+}
+
+// Removes all tooltip elements
+function removeToolTips() {
+  document.querySelectorAll('.tooltip1').forEach(el => el.remove());
+}
+
+// Brings tooltip to front (useful for tooltips layered over elements)
+function bringTooltipToFront(node, tooltips) {
+  tooltips.forEach(tooltip => {
+    tooltip.style.zIndex = "1000";
+  });
+}
+
+// Creates and returns content for the side tip dialog box
+function getSideTipContentEl(text) {
+  const dialogContent = document.createElement("div");
+  dialogContent.className = "sideTipContent";
+  dialogContent.textContent = text;
+  return dialogContent;
+}
+
+// Clears any text markup by removing specific classes or spans
+function clearTextMarkup() {
+  document.querySelectorAll('.complex-sentence, .complex-word').forEach((el) => {
+    el.classList.remove('complex-sentence', 'complex-word');
+  });
+}
+
+// Placeholder function for applying markup to complex text
+function markupComplexText() {
+  console.log("Applying complex text markup...");
+}
+
+
+
+
+
+
 
 (function main() {
   var originalSentences = {};
