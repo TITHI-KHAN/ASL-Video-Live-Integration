@@ -1,14 +1,64 @@
 // content.js - modifies and adds behaviors to active tab page
 
 (function main() {
-  // Existing code...
-  
-  // Add an arrow pointing from ASL video to highlighted word
+
+  var originalSentences = {};
+  var markedUpSentences = {};
+  var replacedSentences = null;
+  var extensionSettings = {}
+  let FIREBASE_URL = '';
+  let CHROME_STORAGE_VAR = "atsp_settings";
+
+  const mainContent = identifyPageMainContent();
+  mainContent.classList.add("document");
+  mainContent.setAttribute("id", "document0");
+
+  const paragraphs = mainContent.querySelectorAll("p");
+  var wordIndex = 0; 
+  var sentenceIndex = 0;
+
+  for (var i = 0; i < paragraphs.length; i++) {
+    let paragraph = paragraphs[i];
+    paragraph.classList.add("paragraph");
+    paragraph.setAttribute("id", `paragraph${i}`);
+    words = identifyWords(paragraph);
+    identifySentences(words);
+    paragraph.innerHTML = words.join(" "); 
+  }
+
+  document.querySelectorAll('[id*="sentence"]').forEach(function(sentence) {
+    markedUpSentences[sentence.id] = sentence.innerHTML;
+  });
+
+  chrome.runtime.sendMessage({
+    from: "content",
+    toSimplify: originalSentences
+  });
+
+  chrome.storage.sync.get(CHROME_STORAGE_VAR, function (status) {
+    switchingSetting(status[CHROME_STORAGE_VAR], true);
+  });
+
+  chrome.runtime.onMessage.addListener(function(request) {
+    if (request.from === "extension") {
+      switchingSetting(request.settings, request.resets);
+    } 
+    else if (request.from === "API") {
+      if (request.textType === "sentence") {
+        replacedSentences = JSON.parse(request.toChange);
+        replacedSentences.forEach(sentence => {
+          sentence.text = JSON.parse(sentence.text);
+        });
+        markupComplexWords();
+        markupComplexText();
+      }
+    }
+  });
+
   function addArrow(node, targetElement) {
     const arrowDiv = document.createElement("div");
     arrowDiv.classList.add("arrow");
-    
-    // Position the arrow between node and targetElement
+
     const nodeRect = node.getBoundingClientRect();
     const targetRect = targetElement.getBoundingClientRect();
     arrowDiv.style.position = "absolute";
@@ -18,7 +68,6 @@
     document.body.appendChild(arrowDiv);
   }
 
-  // Modifying showToolTip to include an arrow and live feedback
   function showToolTip(node, replacement) {
     if (extensionSettings["howLongSetting"] != "Permanent") {
       removeToolTips();
@@ -34,14 +83,10 @@
     node.insertBefore(tooltipWrap, node.firstChild);
     bringTooltipToFront(node, [tooltipWrap]);
 
-    // Add arrow pointing from tooltip to word
     addArrow(node, tooltipWrap);
-
-    // Fetch live video data
     fetchLiveASLVideo(node.innerText, tooltipWrap);
   }
 
-  // Modifying showSideTip to include an arrow and live feedback
   function showSideTip(node, replacement) {
     let id = node.id;
 
@@ -60,17 +105,13 @@
       node.addEventListener("mouseenter", () => dialogBox.classList.add("highlight"));
       node.addEventListener("mouseleave", () => dialogBox.classList.remove("highlight"));
 
-      // Add arrow from dialog to word
       addArrow(node, dialogBox);
-
-      // Fetch live video data
       fetchLiveASLVideo(node.innerText, dialogContent);
     } else {
       alert("Error: A simplification wasn't found for this.");
     }
-  }
+  };
 
-  // Helper function to fetch live ASL video
   function fetchLiveASLVideo(word, targetElement) {
     const liveFeedbackUrl = `https://example-live-feedback-url.com/asl-video?word=${encodeURIComponent(word)}`;
 
@@ -84,5 +125,7 @@
       });
   }
 
-  // Existing code...
+  // Helper functions like identifyPageMainContent, calculateTextDensity, identifyWords, etc.
+  // (Keep these helper functions as they are in your original content.js file)
+
 })();
