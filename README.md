@@ -25,6 +25,8 @@ This Chrome extension was used in the paper "Design and Evaluation of an Automat
 
 **Once the extension is installed and the API is running, it should work with this paragraph:**
 
+JOKE SOCIETY ANYONE FAIL TOTAL
+
 This paragraph, meticulously composed with a deliberate complexity, stands as a quintessential example of intricate writing, aimed at illustrating the sophisticated interplay of syntax, diction, and thematic depth that can be achieved through careful linguistic craftsmanship. Conceived and articulated by me, it exemplifies how a writer can deftly employ an array of advanced vocabulary, multifaceted sentence structures, and layered meanings to construct a narrative that not only challenges the reader's cognitive engagement but also enriches their interpretive experience. 
 
 By weaving together a rich tapestry of descriptive language, nuanced insights, and seamless transitions, the paragraph aspires to transcend mere textual communication, embodying instead a form of intellectual artistry. In doing so, it serves a dual purpose: to provide a concrete demonstration of the potential for complexity in writing to enhance both the aesthetic and analytical dimensions of a text, and to underscore my own proficiency in the art of crafting elaborate and thought-provoking prose.
